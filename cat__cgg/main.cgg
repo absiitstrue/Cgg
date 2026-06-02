@@ -1,0 +1,202 @@
+<!;
+typeout = 16
+clean = 0
+!>
+main() {
+args = get.arg()
+argc = _argc_val
+
+if argc < 2 {
+    print("Usage: cat [-benstuvAETzdx] file...\n")
+    exit(1)
+}
+
+number_all = 0
+number_nonblank = 0
+squeeze_blank = 0
+show_ends = 0
+show_nonprinting = 0
+show_bits = 0
+show_dec = 0
+show_hex = 0
+
+flag_n = 0
+first_file = 1
+show_tabs = 0
+show_nonprinting = 0
+
+arg_ptr = 1
+while arg_ptr < argc {
+    current_arg = args[arg_ptr]
+    if current_arg[0] == '-' {
+        j = 1
+        while current_arg[j] != 0 {
+            opt = current_arg[j]
+            if opt == 'n' { 
+                number_all = 1 
+            }
+            if opt == 'b' { 
+                number_nonblank = 1 
+            }
+            if opt == 's' { 
+                squeeze_blank = 1 
+            }
+            if opt == 'v' { 
+                show_nonprinting = 1 
+            }
+            if opt == 'd' {
+                show_dec = 1
+            }
+            if opt == 'x' {
+                show_hex = 1
+            }
+            if opt == 'z' {
+                show_bits = 1
+            }
+            if opt == 'E' { 
+                show_ends = 1 
+            }
+            if opt == 'T' { 
+                show_tabs = 1 
+            }
+            if opt == 'A' { 
+                show_nonprinting = 1
+                show_ends = 1
+                show_tabs = 1
+            }
+            if opt == 'e' { 
+                show_nonprinting = 1
+                show_ends = 1 
+            }
+            if opt == 't' { 
+                show_nonprinting = 1
+                show_tabs = 1 
+            }
+            j = j + 1
+        }
+        first_file = arg_ptr + 1
+    }
+    arg_ptr = arg_ptr + 1
+}
+
+line_num = 1
+
+file_id = first_file
+while file_id < argc {
+    filename = args[file_id]
+    data = 0
+    file.read("full", filename, data)
+    newlines = 0
+    is_at_start = 1
+    
+    if data != 0 {
+        pos = 0
+        while data[pos] != 0 {
+            ch = data[pos]
+
+            if show_hex == 1 {
+                h1 = ch // 16
+                h2 = ch % 16
+                if h1 < 10 {
+                    print("<<h1>>")
+                }
+                elif h1 >= 10 {
+                    c_tmp = h1 + 55
+                    print("'as, c_tmp'")
+                }
+                if h2 < 10 {
+                    print("<<h2>>")
+                }
+                elif h2 >= 10 {
+                    c_tmp = h2 + 55
+                    print("'as, c_tmp'")
+                }
+                print(" ")
+            } elif show_dec == 1 {
+                print("<<ch>> ")
+            } elif show_bits == 1 {
+                v_tmp = ch
+                d_tmp = 128
+                while d_tmp > 0 {
+                    b_tmp = v_tmp // d_tmp
+                    print("<<b_tmp>>")
+                    v_tmp = v_tmp % d_tmp
+                    d_tmp = d_tmp // 2
+                }
+                print(" ")
+            } else {
+
+            if ch == 10 {
+                newlines = newlines + 1
+                if squeeze_blank == 1 {
+                    if newlines > 2 {
+                        pos = pos + 1
+                        continue
+                    }
+                }
+            } else {
+                newlines = 0
+            }
+
+            if ch == 10 {
+                if is_at_start == 1 {
+                    if number_all == 1 {
+                        if number_nonblank == 0 {
+                            print("<<line_num>> ")
+                            line_num = line_num + 1
+                        }
+                    }
+                }
+                if show_ends == 1 { print("$") }
+                print("'as, ch'")
+                is_at_start = 1
+            } elif ch == 9 {
+                if is_at_start == 1 {
+                    if number_all == 1 {
+                        print("<<line_num>> ")
+                        line_num = line_num + 1
+                    } elif number_nonblank == 1 {
+                        print("<<line_num>> ")
+                        line_num = line_num + 1
+                    }
+                }
+                if show_tabs == 1 {
+                    print("^I")
+                } else {
+                    print("'as, ch'")
+                }
+                is_at_start = 0
+            } else {
+                if is_at_start == 1 {
+                    if number_all == 1 {
+                        print("<<line_num>> ")
+                        line_num = line_num + 1
+                    } elif number_nonblank == 1 {
+                        print("<<line_num>> ")
+                        line_num = line_num + 1
+                    }
+                }
+                if show_nonprinting == 1 {
+                    if ch < 32 {
+                        print("^")
+                        t_ch = ch + 64
+                        print("'as, t_ch'")
+                    } elif ch == 127 {
+                        print("^?")
+                    } else {
+                        print("'as, ch'")
+                    }
+                } else {
+                    print("'as, ch'")
+                }
+                is_at_start = 0
+            }
+            
+            }
+            pos = pos + 1
+        }
+    }
+    file_id = file_id + 1
+}
+
+}
